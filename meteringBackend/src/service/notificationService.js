@@ -176,7 +176,7 @@ const sendNotification = async ({ meterId, data }) => {
     const time = new Date();
 
     // Combine tempor alerts and Low Balance alert if balance < 50
-    let alertsToProcess = [...data.tempor];
+    let alertsToProcess = [...data.tamper];
 
     if (data.balance_amount.value < 50) {
       alertsToProcess.push({

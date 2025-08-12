@@ -8,7 +8,8 @@ const generateTokenFromIOT = require('../utils/jwtGeneratorIOT');
 const { dailyDataCollectionPerMeter } = require('../helper/DailyDataCollectionJOB');
 const DailyMeterSummary = require('../model/DailyMeterSummary');
 const status = require('statuses');
-
+const { sendNotification } = require("../service/notificationService");
+// const { sendNotification } = require("./src/service/notificationService");
 //smartlynk-apis
 const saveMeterReading = async (req, res) => {
   try {
@@ -30,6 +31,20 @@ const saveMeterReading = async (req, res) => {
 
     // Save it to the DB
     await reading.save();
+
+      // Step 4: Send notification after saving
+    try {
+      await sendNotification({
+        meterId: validatedReading.meterId,
+        data: {
+          tamper: validatedReading.tamper,
+          balance_amount: validatedReading.balance_amount
+        }
+      });
+    } catch (notifyErr) {
+      console.error("Failed to send notification:", notifyErr);
+      // Decide: Either continue or return error depending on business need
+    }
 
     return res.status(201).json({
       message: "Meter reading saved successfully",

@@ -276,9 +276,14 @@ import { selectUserProfile } from '../redux/slice/userSlice';
 import { useEffect } from 'react';
 import { fetchUserProfile } from '../redux/thunks/profileThunks';
 
+
+
+
 const getAdminFavoriteItems = (userId) => [
   { name: "Billing & Payments", path: "/billing-payment", icon: FaFileInvoiceDollar, color: "text-emerald-500" },
-  { name: "Support & Logs", path: "/supportandlogs", icon: FaLifeRing, color: "text-blue-500" },
+// Admin
+{ name: "Support & Logs", path: `/admin/supportandlogs/${userId}`, icon: FaLifeRing, color: "text-blue-500" },
+  
   { name: "Energy Consumption", path: "/energyConsumption", icon: FaBolt, color: "text-yellow-500" },
   { name: "Onboarding", path: "/onboarding", icon: FaUserPlus, color: "text-purple-500" }
 ];
@@ -308,11 +313,14 @@ const getUserMainMenuItems = (userId) => [
   { name: "Account Recharge", path: "/rechage-meter", icon: FaCreditCard, color: "text-green-500" },
   { name: "Reports", path: "/reports", icon: FaChartBar, color: "text-orange-500" },
   { name: "Account Settings", path: "/account-setting", icon: FaCog, color: "text-gray-500" },
-  { name: "Support", path: "/support", icon: FaHeadset, color: "text-cyan-500" },
+// User
+{ name: "Support & Logs", path: `/user/supportandlogs/${userId}`, icon: FaLifeRing, color: "text-blue-500" },
+  // { name: "Support", path: "/support", icon: FaHeadset, color: "text-cyan-500" },
   { name: "Chat", path: "/chat", icon: FaComments, color: "text-cyan-500" },
   { name: "Invoice", path: "/invoice", icon: FaFileInvoiceDollar, color: "text-pink-500" },
-  { name: "Notifications", path: "/notifications", icon: FaBell, color: "text-red-500" }
+{ name: "Notifications", path: `/user/alert-notification/${userId}`, icon: FaBell, color: "text-red-500" }
 ];
+
 
 const getSettingsItems = () => [
   { name: "Profile Settings", path: "/user/profile", icon: FaUser, color: "text-gray-600" },

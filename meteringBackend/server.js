@@ -64,7 +64,7 @@ app.get("/test", async (req, res) => {
       current_b: { value: 10, unit: "A" },
       power_factor: { value: 0.98, unit: "pf" },
       frequency: { value: 50, unit: "Hz" },
-      tempor: [
+      tamper: [
         { value: "High Load Usage", unit: 567 },
         { value: "Magnetic Interference", unit: false },
       ],
@@ -77,7 +77,7 @@ app.get("/test", async (req, res) => {
       // meterId: validatedReading.meterId,
       meterId,
       data: {
-        tempor: validatedReading.tempor,
+        tamper: validatedReading.tamper,
         balance_amount: validatedReading.balance_amount,
       },
     });
