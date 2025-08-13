@@ -4,39 +4,53 @@ const express = require("express");
 const Ticket = require("../model/Ticket");
 const User = require("../model/User");
 // const { authenticate, authorize } = require("../middleware/auth");
+const generateTicketId = require("../utils/ticketId");
 
-const createTicket = async (req, res) => {
-  // Create a new ticket
-  // router.post("/", authenticate, async (req, res) => {
-  try {
-    const { title, description, priority, category, tags } = req.body;
+// // create ticket
+// const createTicket = async (req, res) => {
+//   // Create a new ticket
+//   // router.post("/", authenticate, async (req, res) => {
+//   try {
+//     const { title, description, priority, category, tags } = req.body;
 
-    const customer = await User.findById(req.user.id);
-    if (!customer) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     console.log("=======req.body====",req.body)
 
-    const ticketData = {
-      title,
-      description,
-      customer: req.user.id,
-      email: customer.email,
-      phone: customer.phonenumber || "",
-      priority,
-      category,
-      tags,
-      adminId: customer.adminId || null,
-      superAdminId: customer.superAdminId || null,
-    };
+//     const customer = await User.findById(req.user.id);
+//     console.log("--customer--",req.user.id,customer)
+//     if (!customer) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    const ticket = new Ticket(ticketData);
-    await ticket.save();
+//     const ticketData = {
+//         ticketId: generateTicketId(),
+//       title,
+//       description,
+//       customer: req.user.id,
+//       email: customer.email,
+//       phone: customer.phonenumber || "",
+//       priority,
+//       category,
+//       tags,
+//       adminId: customer.adminId || null,
+//       superAdminId: customer.superAdminId || null,
+//     };
 
-    res.status(201).json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+//     const ticket = new Ticket(ticketData);
+//     await ticket.save();
+
+//     res.status(201).json(ticket);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
+
+
+
+
+
+
 
 // Get all tickets (with filters)
 const getAllTickets = async (req, res) => {
@@ -110,105 +124,147 @@ const getTicketbyID = async (req, res) => {
   }
 };
 
-// Update ticket (status, priority, assignee, etc.)
+// // Update ticket (status, priority, assignee, etc.)
 
-const updateTicket = async (req, res) => {
-  try {
-    const { actionType, ...updateData } = req.body;
-    const ticket = await Ticket.findById(req.params.id);
+// const updateTicket = async (req, res) => {
+//   try {
+//     const { actionType, ...updateData } = req.body;
+//     const ticket = await Ticket.findById(req.params.id);
 
-    if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found" });
-    }
+//     if (!ticket) {
+//       return res.status(404).json({ message: "Ticket not found" });
+//     }
+// console.log("======+++",req.user,req.body)
+//     // Check permissions
+//     const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
+//     console.log("--1")
+//     const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
+//      console.log("--2")
+//     const isCustomer = ticket.customer.toString() === req.user.id;
+//      console.log("--3")
 
-    // Check permissions
-    const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
-    const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
-    const isCustomer = ticket.customer.toString() === req.user.id;
+//     if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
+//       return res.status(403).json({ message: "Unauthorized" });
+//     }
+//     console.log("--4")
+//     // Handle different action types
+//     // if (actionType === "update_status") {
+//     //   if (!isAdminOrSuperAdmin && !isAssignedTo) {
+//     //     return res
+//     //       .status(403)
+//     //       .json({ message: "Unauthorized to change status" });
+//     //   }
+//     //   ticket.status = updateData.newStatus;
+//     // } else if (actionType === "update_priority") {
+//     //   if (!isAdminOrSuperAdmin) {
+//     //     return res
+//     //       .status(403)
+//     //       .json({ message: "Unauthorized to change priority" });
+//     //   }
+//     //   ticket.priority = updateData.newPriority;
+//     // } else if (actionType === "reassign_ticket") {
+//     //   if (!isAdminOrSuperAdmin) {
+//     //     return res.status(403).json({ message: "Unauthorized to reassign" });
+//     //   }
+//     //   ticket.assignedTo = updateData.newAssignee;
+//     // } else if (actionType === "forward_to_superadmin") {
+//     //   if (req.user.role !== "admin") {
+//     //     return res
+//     //       .status(403)
+//     //       .json({ message: "Only admins can forward tickets" });
+//     //   }
+//     //   ticket.forwardedToSuperAdmin = true;
+//     //   ticket.forwardedReason = updateData.reason;
+//     // } else {
+//     //   // General update (only customer can update description/title)
+//     //   if (!isCustomer) {
+//     //     return res
+//     //       .status(403)
+//     //       .json({ message: "Unauthorized to update ticket details" });
+//     //   }
+//     //   if (updateData.title) ticket.title = updateData.title;
+//     //   if (updateData.description) ticket.description = updateData.description;
+//     // }
 
-    if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
 
-    // Handle different action types
-    if (actionType === "update_status") {
-      if (!isAdminOrSuperAdmin && !isAssignedTo) {
-        return res
-          .status(403)
-          .json({ message: "Unauthorized to change status" });
-      }
-      ticket.status = updateData.newStatus;
-    } else if (actionType === "update_priority") {
-      if (!isAdminOrSuperAdmin) {
-        return res
-          .status(403)
-          .json({ message: "Unauthorized to change priority" });
-      }
-      ticket.priority = updateData.newPriority;
-    } else if (actionType === "reassign_ticket") {
-      if (!isAdminOrSuperAdmin) {
-        return res.status(403).json({ message: "Unauthorized to reassign" });
-      }
-      ticket.assignedTo = updateData.newAssignee;
-    } else if (actionType === "forward_to_superadmin") {
-      if (req.user.role !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Only admins can forward tickets" });
-      }
-      ticket.forwardedToSuperAdmin = true;
-      ticket.forwardedReason = updateData.reason;
-    } else {
-      // General update (only customer can update description/title)
-      if (!isCustomer) {
-        return res
-          .status(403)
-          .json({ message: "Unauthorized to update ticket details" });
-      }
-      if (updateData.title) ticket.title = updateData.title;
-      if (updateData.description) ticket.description = updateData.description;
-    }
+//     if (actionType === "update_status") {
+//   // Only admin or superadmin can update status
+//   if (!isAdminOrSuperAdmin) {
+//     return res
+//       .status(403)
+//       .json({ message: "Unauthorized to change status" });
+//   }
+//   ticket.status = updateData.newStatus;
 
-    await ticket.save();
-    res.json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+// } else if (actionType === "update_priority") {
+//   // Anyone with access (customer, assigned, admin, superadmin) can update priority
+//   ticket.priority = updateData.newPriority;
 
-// Add comment to ticket
+// } else if (actionType === "reassign_ticket") {
+//   // Anyone with access can reassign
+//   ticket.assignedTo = updateData.newAssignee;
 
-const addCommentToTicket = async (req, res) => {
-  try {
-    const { content } = req.body;
-    const ticket = await Ticket.findById(req.params.id);
+// } else if (actionType === "forward_to_superadmin") {
+//   if (req.user.role !== "admin") {
+//     return res
+//       .status(403)
+//       .json({ message: "Only admins can forward tickets" });
+//   }
+//   ticket.forwardedToSuperAdmin = true;
+//   ticket.forwardedReason = updateData.reason;
 
-    if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found" });
-    }
+// } else {
+//   // General update (only customer can update description/title)
+//   if (!isCustomer) {
+//     return res
+//       .status(403)
+//       .json({ message: "Unauthorized to update ticket details" });
+//   }
+//   if (updateData.title) ticket.title = updateData.title;
+//   if (updateData.description) ticket.description = updateData.description;
+// }
 
-    // Check permissions
-    const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
-    const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
-    const isCustomer = ticket.customer.toString() === req.user.id;
+// console.log("=====ticket=======",ticket)
+//     await ticket.save();
+//     res.json(ticket);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
-    if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
+// // Add comment to ticket
 
-    const comment = {
-      author: req.user.id,
-      content,
-    };
+// const addCommentToTicket = async (req, res) => {
+//   try {
+//     const { content } = req.body;
+//     const ticket = await Ticket.findById(req.params.id);
 
-    ticket.comments.push(comment);
-    await ticket.save();
+//     if (!ticket) {
+//       return res.status(404).json({ message: "Ticket not found" });
+//     }
 
-    res.status(201).json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+//     // Check permissions
+//     const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
+//     const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
+//     const isCustomer = ticket.customer.toString() === req.user.id;
+
+//     if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
+//       return res.status(403).json({ message: "Unauthorized" });
+//     }
+
+//     const comment = {
+//       author: req.user.id,
+//       content,
+//     };
+
+//     ticket.comments.push(comment);
+//     await ticket.save();
+
+//     res.status(201).json(ticket);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 // Delete ticket
 
@@ -253,6 +309,457 @@ const stats = async (req, res) => {
 };
 // module.exports = router;
 
+const createTicket = async (req, res) => {
+  try {
+    const { title, description, priority, category, tags, assignedTo } = req.body;
+
+    const customer = await User.findById(req.user.id);
+    if (!customer) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate assignedTo if provided
+    let validAssignedTo = null;
+    if (assignedTo) {
+      // Check if the assigned user exists
+      const assignee = await User.findById(assignedTo);
+      if (!assignee) {
+        return res.status(400).json({ message: "Invalid assignee" });
+      }
+
+      // Authorization rules
+      if (req.user.role === "user") {
+        // Users can only assign to their admin or superadmin
+        const validAssignees = [customer.adminId, customer.superAdminId].filter(id => id);
+        if (!validAssignees.includes(assignedTo)) {
+          return res.status(403).json({ 
+            message: "You can only assign to your admin or superadmin" 
+          });
+        }
+      } else if (req.user.role === "admin") {
+        // Admins can assign to any admin or superadmin (not just their superadmin)
+        const isValidUser = await User.exists({ 
+          _id: assignedTo,
+          role: { $in: ['admin', 'superAdmin'] }
+        });
+        if (!isValidUser) {
+          return res.status(400).json({ message: "Invalid admin user assigned" });
+        }
+      }
+      validAssignedTo = assignedTo;
+    } else {
+      // Default assignment if not provided
+      if (req.user.role === "user") {
+        validAssignedTo = customer.adminId;
+      } else if (req.user.role === "admin") {
+        validAssignedTo = customer.superAdminId;
+      }
+    }
+
+    const ticketData = {
+      ticketId: generateTicketId(),
+      title,
+      description,
+      customer: req.user.id,
+      email: customer.email,
+      phone: customer.phonenumber || "",
+      priority,
+      category,
+      tags,
+      adminId: customer.adminId || null,
+      superAdminId: customer.superAdminId || null,
+      assignedTo: validAssignedTo
+    };
+
+    const ticket = new Ticket(ticketData);
+    await ticket.save();
+
+    res.status(201).json(ticket);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// const createTicket = async (req, res) => {
+//   try {
+//     const { title, description, priority, category, tags, assignedTo } = req.body;
+
+//     const customer = await User.findById(req.user.id);
+//     if (!customer) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Validate assignedTo if provided
+//     let validAssignedTo = null;
+//     if (assignedTo) {
+//       // Check if the assigned user exists
+//       const assignee = await User.findById(assignedTo);
+//       if (!assignee) {
+//         return res.status(400).json({ message: "Invalid assignee" });
+//       }
+
+//       // Authorization rules
+//       if (req.user.role === "user") {
+//         // Users can only assign to their admin or superadmin
+//         const validAssignees = [customer.adminId, customer.superAdminId].filter(id => id);
+//         if (!validAssignees.includes(assignedTo)) {
+//           return res.status(403).json({ 
+//             message: "You can only assign to your admin or superadmin" 
+//           });
+//         }
+//       } else if (req.user.role === "admin") {
+//         // Admins can only assign to superadmin
+//         if (assignedTo !== customer.superAdminId) {
+//           return res.status(403).json({ 
+//             message: "You can only assign to superadmin" 
+//           });
+//         }
+//       }
+//       validAssignedTo = assignedTo;
+//     } else {
+//       // Default assignment if not provided
+//       if (req.user.role === "user") {
+//         validAssignedTo = customer.adminId;
+//       } else if (req.user.role === "admin") {
+//         validAssignedTo = customer.superAdminId;
+//       }
+//     }
+
+//     const ticketData = {
+//       ticketId: generateTicketId(),
+//       title,
+//       description,
+//       customer: req.user.id,
+//       email: customer.email,
+//       phone: customer.phonenumber || "",
+//       priority,
+//       category,
+//       tags,
+//       adminId: customer.adminId || null,
+//       superAdminId: customer.superAdminId || null,
+//       assignedTo: validAssignedTo
+//     };
+
+//     const ticket = new Ticket(ticketData);
+//     await ticket.save();
+
+//     res.status(201).json(ticket);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
+// const updateTicket = async (req, res) => {
+//   try {
+//     console.log("----------1")
+//     const { actionType, ...updateData } = req.body;
+// const ticket = await Ticket.findById(req.params.id)
+//   .populate("customer", "name email role")
+//   .populate("assignedTo", "name email role")
+//   .populate("adminId", "name email role")
+//   .populate("superAdminId", "name email role");
+// console.log("=====6666666666666666==========",ticket)
+//     if (!ticket) {
+//       return res.status(404).json({ message: "Ticket not found" });
+//     }
+// console.log("----",req.body,req.user)
+//     // Check permissions
+//     const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
+//     const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
+//     const isCustomer = ticket.customer.toString() === req.user.id;
+
+//     if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
+//       return res.status(403).json({ message: "Unauthorized" });
+//     }
+
+//     if (actionType === "update_status") {
+//       // Only assigned user or superadmin can update status
+//       if (!isAssignedTo && req.user.role !== "superAdmin") {
+//         return res.status(403).json({ message: "Unauthorized to change status" });
+//       }
+//       ticket.status = updateData.newStatus;
+//     } else if (actionType === "update_priority") {
+//       // Anyone with access can update priority
+//       ticket.priority = updateData.newPriority;
+//     } else if (actionType === "reassign_ticket") {
+//       // Handle reassignment based on user role
+//  if (req.user.role === "user") {
+//   const validAssignees = [ticket.adminId, ticket.superAdminId]
+//     .filter(id => id)
+//     .map(id => id.toString()); // convert ObjectId to string
+  
+//   if (!validAssignees.includes(updateData.newAssignee.toString())) {
+//     return res.status(403).json({ 
+//       message: "You can only assign to your admin or superadmin" 
+//     });
+//   }
+//       } else if (req.user.role === "admin") {
+//         // Admins can assign to any admin or superadmin (not just their superadmin)
+//         const isValidUser = await User.exists({ 
+//           _id: updateData.newAssignee,
+//           role: { $in: ['admin', 'superAdmin'] }
+//         });
+//         if (!isValidUser) {
+//           return res.status(400).json({ message: "Invalid admin user assigned" });
+//         }
+//       } else if (req.user.role === "superAdmin") {
+//         // Superadmins can assign to any admin
+//         const isValidUser = await User.exists({ 
+//           _id: updateData.newAssignee,
+//           role: { $in: ['admin', 'superAdmin'] }
+//         });
+//         if (!isValidUser) {
+//           return res.status(400).json({ message: "Invalid admin user assigned" });
+//         }
+//       }
+//       ticket.assignedTo = updateData.newAssignee;
+//     } else if (actionType === "forward_to_superadmin") {
+//       if (req.user.role !== "admin") {
+//         return res.status(403).json({ message: "Only admins can forward tickets" });
+//       }
+//       ticket.forwardedToSuperAdmin = true;
+//       ticket.forwardedReason = updateData.reason;
+//     } else {
+//       // General update (only customer can update description/title)
+//       if (!isCustomer) {
+//         return res.status(403).json({ message: "Unauthorized to update ticket details" });
+//       }
+//       if (updateData.title) ticket.title = updateData.title;
+//       if (updateData.description) ticket.description = updateData.description;
+//     }
+
+//     await ticket.save();
+//     res.json(ticket);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+const updateTicket = async (req, res) => {
+  try {
+    const { actionType, ...updateData } = req.body;
+
+    const ticket = await Ticket.findById(req.params.id)
+      .populate("customer", "name email role")
+      .populate("assignedTo", "name email role")
+      .populate("adminId", "name email role")
+      .populate("superAdminId", "name email role");
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
+    const isAssignedTo = ticket.assignedTo?._id?.toString() === req.user.id;
+    const isCustomer = ticket.customer?._id?.toString() === req.user.id;
+
+    // Permissions
+    if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    // Handle actions
+    if (actionType === "update_status") {
+      // Only admin or superadmin can change status
+      if (!isAdminOrSuperAdmin) {
+        return res.status(403).json({ message: "Only admin or superAdmin can change status" });
+      }
+      ticket.status = updateData.newStatus;
+
+    } else if (actionType === "update_priority") {
+      // Anyone with access can change priority
+      ticket.priority = updateData.newPriority;
+
+    } else if (actionType === "reassign_ticket") {
+      if (req.user.role === "user") {
+        const validAssignees = [ticket.adminId?._id, ticket.superAdminId?._id]
+          .filter(Boolean)
+          .map(id => id.toString());
+
+        if (!validAssignees.includes(updateData.newAssignee.toString())) {
+          return res.status(403).json({ message: "You can only assign to your admin or superAdmin" });
+        }
+
+      } else if (req.user.role === "admin") {
+        // Admin can assign only to their own superAdmin
+        if (ticket.superAdminId?._id?.toString() !== updateData.newAssignee.toString()) {
+          return res.status(403).json({ message: "Admins can only assign to their own superAdmin" });
+        }
+
+      } else if (req.user.role === "superAdmin") {
+        // SuperAdmin can assign to any admin
+        const isValidUser = await User.exists({
+          _id: updateData.newAssignee,
+          role: "admin"
+        });
+        if (!isValidUser) {
+          return res.status(400).json({ message: "Invalid admin user assigned" });
+        }
+      }
+
+      ticket.assignedTo = updateData.newAssignee;
+
+    } else if (actionType === "forward_to_superadmin") {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Only admins can forward tickets" });
+      }
+      ticket.forwardedToSuperAdmin = true;
+      ticket.forwardedReason = updateData.reason;
+
+    } else {
+      // Only customer can update description/title
+      if (!isCustomer) {
+        return res.status(403).json({ message: "Unauthorized to update ticket details" });
+      }
+      if (updateData.title) ticket.title = updateData.title;
+      if (updateData.description) ticket.description = updateData.description;
+    }
+
+    await ticket.save();
+    res.json(ticket);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// const updateTicket = async (req, res) => {
+//   try {
+//     const { actionType, ...updateData } = req.body;
+//     const ticket = await Ticket.findById(req.params.id);
+
+//     if (!ticket) {
+//       return res.status(404).json({ message: "Ticket not found" });
+//     }
+
+//     // Check permissions
+//     const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
+//     const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
+//     const isCustomer = ticket.customer.toString() === req.user.id;
+
+//     if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
+//       return res.status(403).json({ message: "Unauthorized" });
+//     }
+
+//     if (actionType === "update_status") {
+//       // Only assigned user or superadmin can update status
+//       if (!isAssignedTo && req.user.role !== "superAdmin") {
+//         return res.status(403).json({ message: "Unauthorized to change status" });
+//       }
+//       ticket.status = updateData.newStatus;
+//     } else if (actionType === "update_priority") {
+//       // Anyone with access can update priority
+//       ticket.priority = updateData.newPriority;
+//     } else if (actionType === "reassign_ticket") {
+//       // Handle reassignment based on user role
+//       if (req.user.role === "user") {
+//         // Users can only assign to their admin or superadmin
+//         const validAssignees = [ticket.adminId, ticket.superAdminId].filter(id => id);
+//         if (!validAssignees.includes(updateData.newAssignee)) {
+//           return res.status(403).json({ 
+//             message: "You can only assign to your admin or superadmin" 
+//           });
+//         }
+//       } else if (req.user.role === "admin") {
+//         // Admins can only assign to superadmin
+//         if (updateData.newAssignee !== ticket.superAdminId) {
+//           return res.status(403).json({ 
+//             message: "You can only assign to superadmin" 
+//           });
+//         }
+//       } else if (req.user.role === "superAdmin") {
+//         // Superadmins can assign to any admin
+//         const isValidUser = await User.exists({ 
+//           _id: updateData.newAssignee,
+//           role: { $in: ['admin', 'superAdmin'] }
+//         });
+//         if (!isValidUser) {
+//           return res.status(400).json({ message: "Invalid admin user assigned" });
+//         }
+//       }
+//       ticket.assignedTo = updateData.newAssignee;
+//     } else if (actionType === "forward_to_superadmin") {
+//       if (req.user.role !== "admin") {
+//         return res.status(403).json({ message: "Only admins can forward tickets" });
+//       }
+//       ticket.forwardedToSuperAdmin = true;
+//       ticket.forwardedReason = updateData.reason;
+//     } else {
+//       // General update (only customer can update description/title)
+//       if (!isCustomer) {
+//         return res.status(403).json({ message: "Unauthorized to update ticket details" });
+//       }
+//       if (updateData.title) ticket.title = updateData.title;
+//       if (updateData.description) ticket.description = updateData.description;
+//     }
+
+//     await ticket.save();
+//     res.json(ticket);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+const addCommentToTicket = async (req, res) => {
+  try {
+    const { content } = req.body;
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    // Check permissions
+    const isAdminOrSuperAdmin = ["admin", "superAdmin"].includes(req.user.role);
+    const isAssignedTo = ticket.assignedTo?.toString() === req.user.id;
+    const isCustomer = ticket.customer.toString() === req.user.id;
+
+    if (!isAdminOrSuperAdmin && !isAssignedTo && !isCustomer) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const comment = {
+      author: req.user.id,
+      content,
+    };
+
+    ticket.comments.push(comment);
+    await ticket.save();
+
+    res.status(201).json(ticket);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const getAvailableAssignees = async (req, res) => {
+  try {
+    let query = {};
+    console.log("=====query====",req.query)
+    
+    if (req.query.adminId && req.query.superAdminId) {
+      // For regular users
+      query = { 
+        _id: { $in: [req.query.adminId, req.query.superAdminId] },
+        role: { $in: ['admin', 'superAdmin'] }
+      };
+    } else if (req.query.superAdminId) {
+      // For admins
+      query = { 
+        _id: req.query.superAdminId,
+        role: 'superAdmin'
+      };
+    } else {
+      // For superadmins
+      query = { role: { $in: ['admin', 'superAdmin'] } };
+    }
+
+    const assignees = await User.find(query).select('name email role');
+    res.json(assignees);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}; 
 module.exports = {
   createTicket,
   getAllTickets,
@@ -260,5 +767,6 @@ module.exports = {
   updateTicket,
   addCommentToTicket,
   deleteTicket,
-  stats
+  stats,
+  getAvailableAssignees
 };

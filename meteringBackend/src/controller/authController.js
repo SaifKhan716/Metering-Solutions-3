@@ -111,10 +111,19 @@ const login = async (req, res) => {
     if (loginResponse.status !== 200) {
       return res.status(loginResponse.status).json({ error: loginResponse.message });
     }
+    // console.log("===loginResponse==",user)
+    // return res.status(loginResponse.status).json({
+    //   message: loginResponse.message,
+    //   data:loginResponse.user
+    // });
     return res.status(loginResponse.status).json({
-      message: loginResponse.message,
-      data:loginResponse.user
-    });
+  message: loginResponse.message,
+  data: {
+    ...loginResponse.user, // spread all user fields
+    adminId: user.adminId,
+    superAdminId:user.superAdminId             // explicitly ensure adminId is included
+  }
+});
 
   } catch (error) {
     console.error("Error during user login:", error);
